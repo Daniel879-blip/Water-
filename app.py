@@ -178,13 +178,11 @@ freq_map = {'Daily':'D','Weekly':'W','Monthly':'M'}
 resample_freq = freq_map.get(agg_freq, 'D')
 
 if aggregate_fn == 'Sum':
-    agg_series = (
-    df_filtered
-    .set_index('Date')  # Make Date the index
-    .resample(resample_freq)['Consumption']  # Resample directly on datetime index
-    .sum()
-    .reset_index()
-)
+    agg_series = df_filtered.groupby('Date')['Consumption'].sum().resample(resample_freq, on='Date').sum().reset_index()
+else:
+    agg_series = df_filtered.groupby('Date')['Consumption'].sum().resample(resample_freq, on='Date').mean().reset_index()
+
+agg_series = agg_series.rename(columns={'Consumption':'Consumption'}).sort_values('Date').reset_index(drop=True)
 
 # Show small preview and KPIs
 st.subheader('Dataset preview and KPIs')
@@ -247,8 +245,7 @@ if model_choice == 'Random Forest':
     model = RandomForestRegressor(n_estimators=n_estimators, max_depth=(None if max_depth==0 else max_depth), random_state=42, n_jobs=-1)
     model.fit(X_train_scaled, y_train)
     preds = model.predict(X_test_scaled)
-    import numpy as np
-rmse = np.sqrt(mean_squared_error(y_test, preds))
+    rmse = mean_squared_error(y_test, preds, squared=False)
     train_msg = f'Random Forest trained. Test RMSE: {rmse:.2f}'
 elif model_choice == 'Prophet' and PROPHET_AVAILABLE:
     # Prophet wants columns ds/y and continuous daily data (we will use the aggregated daily series)
