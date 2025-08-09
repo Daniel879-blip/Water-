@@ -247,7 +247,8 @@ if model_choice == 'Random Forest':
     model = RandomForestRegressor(n_estimators=n_estimators, max_depth=(None if max_depth==0 else max_depth), random_state=42, n_jobs=-1)
     model.fit(X_train_scaled, y_train)
     preds = model.predict(X_test_scaled)
-    rmse = mean_squared_error(y_test, preds, squared=False)
+    import numpy as np
+rmse = np.sqrt(mean_squared_error(y_test, preds))
     train_msg = f'Random Forest trained. Test RMSE: {rmse:.2f}'
 elif model_choice == 'Prophet' and PROPHET_AVAILABLE:
     # Prophet wants columns ds/y and continuous daily data (we will use the aggregated daily series)
