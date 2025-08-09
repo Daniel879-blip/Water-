@@ -178,11 +178,13 @@ freq_map = {'Daily':'D','Weekly':'W','Monthly':'M'}
 resample_freq = freq_map.get(agg_freq, 'D')
 
 if aggregate_fn == 'Sum':
-    agg_series = df_filtered.groupby('Date')['Consumption'].sum().resample(resample_freq, on='Date').sum().reset_index()
-else:
-    agg_series = df_filtered.groupby('Date')['Consumption'].sum().resample(resample_freq, on='Date').mean().reset_index()
-
-agg_series = agg_series.rename(columns={'Consumption':'Consumption'}).sort_values('Date').reset_index(drop=True)
+    agg_series = (
+    df_filtered
+    .set_index('Date')  # Make Date the index
+    .resample(resample_freq)['Consumption']  # Resample directly on datetime index
+    .sum()
+    .reset_index()
+)
 
 # Show small preview and KPIs
 st.subheader('Dataset preview and KPIs')
